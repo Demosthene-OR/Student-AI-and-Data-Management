@@ -1,0 +1,8 @@
+!git clone https://github.com/Demosthene-OR/Student-AI-and-Data-Management.git
+from google.colab import files
+import os
+
+# Lister les notebooks et créer des liens cliquables
+for f in os.listdir('/content/Student-AI-and-Data-Management'):
+    if f.endswith('.ipynb'):
+        print(f"https://colab.research.google.com/drive/CONTENT/{f}")
