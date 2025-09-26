@@ -4,7 +4,6 @@ from IPython.display import display
 import plotly.graph_objs as go
 from sklearn.linear_model import LinearRegression
 
-
 # =========================
 # Linear Regression Widget
 # =========================
@@ -13,14 +12,12 @@ def regression_widget():
     X = np.linspace(-4, 4, 50)
     y = 0.5*X + 1.5 + np.random.normal(0,1,50)
 
-    # Scatter plot + initial line
     scatter = go.Scatter(x=X, y=y, mode='markers', marker=dict(color='blue'))
     line = go.Scatter(x=X, y=0.5*X + 1.5, mode='lines', line=dict(color='red'))
 
     fig = go.FigureWidget(data=[scatter, line])
     fig.update_layout(width=400, height=400, title="Linear Regression")
 
-    # Sliders
     beta_slider = widgets.FloatSlider(min=-2, max=2, step=0.1, value=0.5, description="β1")
     bias_slider = widgets.FloatSlider(min=-3, max=3, step=0.1, value=1.5, description="β0")
 
@@ -29,7 +26,7 @@ def regression_widget():
             fig.data[1].y = beta*X + bias
 
     widgets.interact(update_plot, beta=beta_slider, bias=bias_slider)
-    display(fig)
+    display(widgets.VBox([beta_slider, bias_slider, fig]))
 
 # =========================
 # Interactive MSE Widget
@@ -73,9 +70,8 @@ def polynomial_regression():
     fig = go.FigureWidget(data=[scatter, line])
     fig.update_layout(width=400, height=400, title="Polynomial Regression")
 
-    # Sliders
-    beta0 = widgets.FloatSlider(-4, 4, 0.1, 0, description="β0")
-    beta1 = widgets.FloatSlider(-2, 2, 0.1, 1, description="β1")
+    beta0 = widgets.FloatSlider(-4, 4, 0.1, 1.5, description="β0")
+    beta1 = widgets.FloatSlider(-2, 2, 0.1, 1.0, description="β1")
     beta2 = widgets.FloatSlider(-2, 2, 0.1, -0.1, description="β2")
 
     def update(beta0_val, beta1_val, beta2_val):
@@ -83,9 +79,11 @@ def polynomial_regression():
             line.y = beta0_val + beta1_val*X + beta2_val*X**2
 
     widgets.interact(update, beta0=beta0, beta1=beta1, beta2=beta2)
-    display(fig)
+    display(widgets.VBox([beta0, beta1, beta2, fig]))
 
-
+# =========================
+# Polynomial Regression with Degree Slider
+# =========================
 def polynomial_regression2():
     np.random.seed(0)
     n_samples = 30
@@ -101,18 +99,16 @@ def polynomial_regression2():
     degree_slider = widgets.IntSlider(min=1, max=10, value=2, description="Degree d")
 
     def update_poly(d):
-        # Create polynomial features
         data = X.reshape(-1,1)
         for i in range(2, d+1):
             data = np.hstack([data, X.reshape(-1,1)**i])
-        # Fit linear regression
         lr = LinearRegression()
         lr.fit(data, y)
         y_pred = lr.predict(data)
         with fig.batch_update():
             fig.data[1].y = y_pred
 
-    widgets.interact(update_poly, d=degree_slider)
-    display(fig)
+    degree_slider.observe(lambda change: update_poly(change['new']), names='value')
+    display(widgets.VBox([degree_slider, fig]))
 
 
