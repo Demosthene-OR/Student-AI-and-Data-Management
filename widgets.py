@@ -148,3 +148,4 @@ def polynomial_regression():
             line.y = beta0 + beta1*X + beta2*X**2
 
         display(fig)
+
