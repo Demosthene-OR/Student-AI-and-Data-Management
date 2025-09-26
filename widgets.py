@@ -1,7 +1,6 @@
 import numpy as np
 import ipywidgets as widgets
 from IPython.display import display
-import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
 # =========================
@@ -14,7 +13,6 @@ def in_colab():
     except ImportError:
         return False
 
-
 # =========================
 # Linear Regression Widget
 # =========================
@@ -24,10 +22,10 @@ def regression_widget():
     y = 0.5 * X[:, 0] + 1.5 + np.random.normal(0, 1, 50)
 
     if in_colab():
-        fig, ax = plt.subplots()
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(4, 4))  # équivalent 400px x 400px
         sc = ax.scatter(X, y, color="blue", alpha=0.7)
         line, = ax.plot(X, X, color="red", lw=2)
-
         ax.set_xlim(-5, 5)
         ax.set_ylim(min(y) - 2, max(y) + 2)
         ax.set_title("Linear Regression (interactive)")
@@ -49,14 +47,16 @@ def regression_widget():
         x_sc, y_sc = plt_bq.LinearScale(), plt_bq.LinearScale()
         scatter = plt_bq.Scatter(x=X[:, 0], y=y, scales={'x': x_sc, 'y': y_sc})
         line = plt_bq.Lines(x=X[:, 0], y=0.5*X[:, 0] + 1.5, scales={'x': x_sc, 'y': y_sc}, colors=["red"])
-        fig = plt_bq.Figure(marks=[scatter, line], axes=[plt_bq.Axis(scale=x_sc), plt_bq.Axis(scale=y_sc, orientation="vertical")])
+        fig = plt_bq.Figure(marks=[scatter, line],
+                            axes=[plt_bq.Axis(scale=x_sc), plt_bq.Axis(scale=y_sc, orientation="vertical")])
+        fig.layout.height = '400px'
+        fig.layout.width = '400px'
 
         @widgets.interact(beta=(-2, 2, 0.1), bias=(-3, 3, 0.1))
         def update(beta=0.5, bias=1.5):
             line.y = beta * X[:, 0] + bias
 
         display(fig)
-
 
 # =========================
 # Interactive MSE Widget
@@ -67,10 +67,10 @@ def interactive_MSE():
     y = 1.5 * X[:, 0] + np.random.normal(0, 1.2, 20)
 
     if in_colab():
-        fig, ax = plt.subplots()
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(4, 4))
         sc = ax.scatter(X, y, color="blue", alpha=0.7)
         line, = ax.plot(X, X, color="red", lw=2)
-
         ax.set_xlim(-5, 5)
         ax.set_ylim(min(y) - 2, max(y) + 2)
         ax.set_title("Interactive MSE")
@@ -92,14 +92,16 @@ def interactive_MSE():
         x_sc, y_sc = plt_bq.LinearScale(), plt_bq.LinearScale()
         scatter = plt_bq.Scatter(x=X[:, 0], y=y, scales={'x': x_sc, 'y': y_sc})
         line = plt_bq.Lines(x=X[:, 0], y=1.5*X[:, 0], scales={'x': x_sc, 'y': y_sc}, colors=["red"])
-        fig = plt_bq.Figure(marks=[scatter, line], axes=[plt_bq.Axis(scale=x_sc), plt_bq.Axis(scale=y_sc, orientation="vertical")])
+        fig = plt_bq.Figure(marks=[scatter, line],
+                            axes=[plt_bq.Axis(scale=x_sc), plt_bq.Axis(scale=y_sc, orientation="vertical")])
+        fig.layout.height = '400px'
+        fig.layout.width = '400px'
 
         @widgets.interact(beta=(-2, 2, 0.1))
         def update(beta=1.5):
             line.y = beta * X[:, 0]
 
         display(fig)
-
 
 # =========================
 # Polynomial Regression Widget
@@ -111,10 +113,10 @@ def polynomial_regression():
     y = -0.1*X**2 + 1*X + 1.5 + np.random.normal(0,1,n_samples)
 
     if in_colab():
-        fig, ax = plt.subplots()
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(4, 4))
         sc = ax.scatter(X, y, color="blue", alpha=0.7)
         line, = ax.plot(X, X, color="red", lw=2)
-
         ax.set_xlim(0, 10)
         ax.set_ylim(min(y)-2, max(y)+2)
         ax.set_title("Polynomial Regression (interactive)")
@@ -136,13 +138,13 @@ def polynomial_regression():
         x_sc, y_sc = plt_bq.LinearScale(), plt_bq.LinearScale()
         scatter = plt_bq.Scatter(x=X, y=y, scales={'x': x_sc, 'y': y_sc})
         line = plt_bq.Lines(x=X, y=-0.1*X**2 + 1*X + 1.5, scales={'x': x_sc, 'y': y_sc}, colors=["red"])
-        fig = plt_bq.Figure(marks=[scatter, line], axes=[plt_bq.Axis(scale=x_sc), plt_bq.Axis(scale=y_sc, orientation="vertical")])
+        fig = plt_bq.Figure(marks=[scatter, line],
+                            axes=[plt_bq.Axis(scale=x_sc), plt_bq.Axis(scale=y_sc, orientation="vertical")])
+        fig.layout.height = '400px'
+        fig.layout.width = '400px'
 
         @widgets.interact(beta0=(-4,4,0.1), beta1=(-2,2,0.1), beta2=(-2,2,0.1))
         def update(beta0=0, beta1=1, beta2=-0.1):
             line.y = beta0 + beta1*X + beta2*X**2
 
         display(fig)
-
-
-
