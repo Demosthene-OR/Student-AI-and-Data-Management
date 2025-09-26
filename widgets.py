@@ -11,12 +11,29 @@ from sklearn import datasets
 from sklearn.linear_model import LinearRegression
 import markdown
 
-
+# Détection Colab
+def in_colab():
+    try:
+        import google.colab
+        return True
+    except ImportError:
+        return False
+    
 def regression_widget():
     ################################################################################   
 
                             # Simulation of Data
 
+    # === Vérification environnement ===
+    if in_colab():
+        try:
+            from google.colab import output
+            output.enable_custom_widget_manager()
+        except Exception:
+            display(HTML("<b style='color:red'>⚠️ Attention :</b> "
+                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
+                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
+            
     linreg1_n_samples = 400
     alpha = 0.5
     bias = 1.5
