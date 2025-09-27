@@ -1,8 +1,7 @@
 import numpy as np
 import ipywidgets as widgets
 from IPython.display import display, HTML
-from sklearn.linear_model import LinearRegression
-
+import bqplot.pyplot as bplt
 
 # Détection Colab
 def in_colab():
@@ -12,206 +11,143 @@ def in_colab():
     except ImportError:
         return False
 
-
-# =========================================================
-# 1. Simple Linear Regression Widget
-# =========================================================
-def regression_widget():
-    n_samples = 100
-    alpha, bias = 0.5, 1.5
-    X = np.linspace(-4, 4, n_samples)
-    y = alpha * X + bias + np.random.normal(0, 1, n_samples)
-
-    # === Vérification environnement ===
+def enable_colab_widgets():
     if in_colab():
         try:
             from google.colab import output
             output.enable_custom_widget_manager()
         except Exception:
             display(HTML("<b style='color:red'>⚠️ Attention :</b> "
-                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
-                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
+                         "Les widgets interactifs peuvent ne pas fonctionner correctement dans Colab. "
+                         "Essaie plutôt dans Jupyter Notebook/Lab."))
+
+enable_colab_widgets()
+
+# ===============================
+# 1. Régression linéaire simple
+# ===============================
+def regression_widget_linear():
+    X = np.linspace(-4, 4, 100)
+    y = 0.5*X + 1.5 + np.random.normal(0,1,len(X))
+
+    # Scales
+    x_sc = bplt.LinearScale(min=-4, max=4)
+    y_sc = bplt.LinearScale(min=min(y)-1, max=max(y)+1)
+
+    # Scatter et ligne
+    scatter = bplt.Scatter(x=X, y=y, colors=['blue'], scales={'x': x_sc, 'y': y_sc})
+    line = bplt.Lines(x=X, y=0.5*X+1.5, colors=['red'], scales={'x': x_sc, 'y': y_sc})
+
+    # Axes avec grille
+    x_ax = bplt.Axis(scale=x_sc, label='X', grid_lines='solid')
+    y_ax = bplt.Axis(scale=y_sc, orientation='vertical', label='Y', grid_lines='solid')
+
+    # Figure
+    fig = bplt.Figure(marks=[scatter, line], axes=[x_ax, y_ax])
+    fig.layout.height = '400px'
+    fig.layout.width = '400px'
+
+    # Sliders
+    beta0 = widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.5, description="β0")
+    beta1 = widgets.FloatSlider(min=-4, max=4, step=0.1, value=0.5, description="β1")
+
+    # Fonction de mise à jour
+    def update(change):
+        line.y = beta1.value*X + beta0.value
+        # Ne pas toucher y_sc.min/max ici
+        # Bqplot ajuste automatiquement l'affichage
+
+    # Connecter sliders
+    beta0.observe(update, names='value')
+    beta1.observe(update, names='value')
+
+    display(fig, widgets.VBox([beta0, beta1]))
 
 
-    try:
-        import bqplot.pyplot as plt
-
-        x_sc = plt.LinearScale(min=-4, max=4)
-        y_sc = plt.LinearScale(min=-4, max=8)
-
-        scatter = plt.Scatter(x=X, y=y, colors=['blue'], scales={'x': x_sc, 'y': y_sc})
-        line = plt.Lines(x=[-4, 4], y=[-4, 4], colors=['red'], scales={'x': x_sc, 'y': y_sc})
-
-        fig = plt.Figure(marks=[scatter, line], axes=[plt.Axis(scale=x_sc), plt.Axis(scale=y_sc)])
-        fig.layout.height, fig.layout.width = '400px', '400px'
-        display(fig)
-
-        @widgets.interact(beta=widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.0),
-                          bias=widgets.FloatSlider(min=-4, max=4, step=0.1, value=0.0))
-        def update(beta, bias):
-            line.y = [beta * -4 + bias, beta * 4 + bias]
-
-    except Exception:
-        import matplotlib.pyplot as plt
-
-        fig, ax = plt.subplots(figsize=(4, 4))
-        ax.scatter(X, y, c='blue', s=10)
-        (line,) = ax.plot([-4, 4], [-4, 4], 'r-')
-
-        def update(beta=1.0, bias=0.0):
-            line.set_ydata([beta * -4 + bias, beta * 4 + bias])
-            fig.canvas.draw_idle()
-
-        sliders = widgets.interactive(update,
-                                      beta=(-4, 4, 0.1),
-                                      bias=(-4, 4, 0.1))
-        display(widgets.VBox([sliders, fig.canvas]))
-
-
-# =========================================================
-# 2. Interactive MSE
-# =========================================================
-def interactive_MSE():
+# ===============================
+# 2. MSE interactif
+# ===============================
+def interactive_MSE_widget():
     np.random.seed(3)
     X = np.linspace(-4, 4, 20)
-    y = 0.7 * X + np.random.normal(0, 1.2, len(X))
+    y = 0.7*X + np.random.normal(0,1.2,len(X))
 
-    # === Vérification environnement ===
-    if in_colab():
-        try:
-            from google.colab import output
-            output.enable_custom_widget_manager()
-        except Exception:
-            display(HTML("<b style='color:red'>⚠️ Attention :</b> "
-                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
-                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
+    x_sc = bplt.LinearScale(min=-4, max=4)
+    y_sc = bplt.LinearScale(min=min(y)-1, max=max(y)+1)
 
-    try:
-        import bqplot.pyplot as plt
+    scatter = bplt.Scatter(x=X, y=y, colors=['blue'], scales={'x': x_sc, 'y': y_sc})
+    line = bplt.Lines(x=X, y=0.7*X, colors=['red'], scales={'x': x_sc, 'y': y_sc})
 
-        x_sc, y_sc = plt.LinearScale(min=-4, max=4), plt.LinearScale(min=-6, max=6)
-        scatter = plt.Scatter(x=X, y=y, colors=['blue'], scales={'x': x_sc, 'y': y_sc})
-        line = plt.Lines(x=[-4, 4], y=[-4, 4], colors=['red'], scales={'x': x_sc, 'y': y_sc})
-        fig = plt.Figure(marks=[scatter, line], axes=[plt.Axis(scale=x_sc), plt.Axis(scale=y_sc)])
-        fig.layout.height, fig.layout.width = '400px', '400px'
-        display(fig)
+    fig = bplt.Figure(marks=[scatter, line], axes=[bplt.Axis(scale=x_sc), bplt.Axis(scale=y_sc)])
+    fig.layout.height = '400px'
+    fig.layout.width = '400px'
 
-        @widgets.interact(beta=widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.0))
-        def update(beta):
-            line.y = [beta * -4, beta * 4]
+    beta1 = widgets.FloatSlider(min=-4, max=4, step=0.1, value=0.7, description="β1")
 
-    except Exception:
-        import matplotlib.pyplot as plt
+    def update(change):
+        line.y = beta1.value * X
 
-        fig, ax = plt.subplots(figsize=(4, 4))
-        ax.scatter(X, y, c='blue', s=10)
-        (line,) = ax.plot([-4, 4], [-4, 4], 'r-')
+    beta1.observe(update, names='value')
 
-        def update(beta=1.0):
-            line.set_ydata([beta * -4, beta * 4])
-            fig.canvas.draw_idle()
+    display(fig, beta1)
 
-        sliders = widgets.interactive(update, beta=(-4, 4, 0.1))
-        display(widgets.VBox([sliders, fig.canvas]))
+# ===============================
+# 3. Régression quadratique
+# ===============================
+def polynomial_regression_widget():
+    X = np.linspace(0, 10, 50)
+    y = -0.1*X**2 + X + 1.5 + np.random.normal(0,1,len(X))
 
+    x_sc = bplt.LinearScale(min=0, max=10)
+    y_sc = bplt.LinearScale(min=min(y)-1, max=max(y)+1)
 
-# =========================================================
-# 3. Quadratic Regression
-# =========================================================
-def polynomial_regression():
-    n_samples = 100
-    X = np.linspace(0, 10, n_samples)
-    y = -0.1 * X**2 + 1 * X + 1.5 + np.random.normal(0, 1, n_samples)
+    scatter = bplt.Scatter(x=X, y=y, colors=['blue'], scales={'x': x_sc, 'y': y_sc})
+    line = bplt.Lines(x=X, y=-0.1*X**2 + X + 1.5, colors=['red'], scales={'x': x_sc, 'y': y_sc})
 
-    # === Vérification environnement ===
-    if in_colab():
-        try:
-            from google.colab import output
-            output.enable_custom_widget_manager()
-        except Exception:
-            display(HTML("<b style='color:red'>⚠️ Attention :</b> "
-                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
-                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
+    fig = bplt.Figure(marks=[scatter, line], axes=[bplt.Axis(scale=x_sc), bplt.Axis(scale=y_sc)])
+    fig.layout.height = '400px'
+    fig.layout.width = '400px'
 
-    try:
-        import bqplot.pyplot as plt
+    b0 = widgets.FloatSlider(min=-4, max=4, step=0.1, value=0.0, description="β0")
+    b1 = widgets.FloatSlider(min=-2, max=2, step=0.1, value=1.0, description="β1")
+    b2 = widgets.FloatSlider(min=-2, max=2, step=0.1, value=-0.1, description="β2")
 
-        x_sc, y_sc = plt.LinearScale(min=0, max=10), plt.LinearScale(min=-5, max=15)
-        scatter = plt.Scatter(x=X, y=y, colors=['blue'], scales={'x': x_sc, 'y': y_sc})
-        line = plt.Lines(x=X, y=X, colors=['red'], scales={'x': x_sc, 'y': y_sc})
-        fig = plt.Figure(marks=[scatter, line], axes=[plt.Axis(scale=x_sc), plt.Axis(scale=y_sc)])
-        fig.layout.height, fig.layout.width = '400px', '400px'
-        display(fig)
+    def update(change):
+        line.y = b0.value + b1.value*X + b2.value*X**2
 
-        @widgets.interact(b0=(-4, 4, 0.1), b1=(-2, 2, 0.1), b2=(-2, 2, 0.1))
-        def update(b0=0, b1=1, b2=0):
-            line.y = b0 + b1 * X + b2 * X**2
+    for w in [b0, b1, b2]:
+        w.observe(update, names='value')
 
-    except Exception:
-        import matplotlib.pyplot as plt
+    display(fig, widgets.VBox([b0, b1, b2]))
 
-        fig, ax = plt.subplots(figsize=(4, 4))
-        ax.scatter(X, y, c='blue', s=10)
-        (line,) = ax.plot(X, X, 'r-')
+# ===============================
+# 4. Régression polynomiale variable
+# ===============================
+from sklearn.linear_model import LinearRegression
 
-        def update(b0=0, b1=1, b2=0):
-            line.set_ydata(b0 + b1 * X + b2 * X**2)
-            fig.canvas.draw_idle()
+def polynomial_regression_variable_widget():
+    X = np.linspace(0, 10, 30)
+    y = -0.1*X**2 + X + 1.5 + np.random.normal(0,1,len(X))
 
-        sliders = widgets.interactive(update, b0=(-4, 4, 0.1), b1=(-2, 2, 0.1), b2=(-2, 2, 0.1))
-        display(widgets.VBox([sliders, fig.canvas]))
+    x_sc = bplt.LinearScale(min=0, max=10)
+    y_sc = bplt.LinearScale(min=min(y)-1, max=max(y)+1)
 
+    scatter = bplt.Scatter(x=X, y=y, colors=['blue'], scales={'x': x_sc, 'y': y_sc})
+    line = bplt.Lines(x=X, y=-0.1*X**2 + X + 1.5, colors=['red'], scales={'x': x_sc, 'y': y_sc})
 
-# =========================================================
-# 4. Polynomial Regression (variable degree)
-# =========================================================
-def polynomial_regression2():
-    n_samples = 30
-    X = np.linspace(0, 10, n_samples)
-    y = -0.1 * X**2 + 1 * X + 1.5 + np.random.normal(0, 1, n_samples)
+    fig = bplt.Figure(marks=[scatter, line], axes=[bplt.Axis(scale=x_sc), bplt.Axis(scale=y_sc)])
+    fig.layout.height = '400px'
+    fig.layout.width = '400px'
 
-    # === Vérification environnement ===
-    if in_colab():
-        try:
-            from google.colab import output
-            output.enable_custom_widget_manager()
-        except Exception:
-            display(HTML("<b style='color:red'>⚠️ Attention :</b> "
-                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
-                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
+    degree = widgets.IntSlider(min=1, max=10, value=2, description="Degree d")
 
-    try:
-        import bqplot.pyplot as plt
+    def update(change):
+        data = X.reshape(-1,1)
+        for i in range(2, degree.value+1):
+            data = np.hstack([data, (X**i).reshape(-1,1)])
+        lr = LinearRegression().fit(data, y)
+        line.y = lr.predict(data)
 
-        x_sc, y_sc = plt.LinearScale(min=0, max=10), plt.LinearScale(min=-5, max=15)
-        scatter = plt.Scatter(x=X, y=y, colors=['blue'], scales={'x': x_sc, 'y': y_sc})
-        line = plt.Lines(x=X, y=y, colors=['red'], scales={'x': x_sc, 'y': y_sc})
-        fig = plt.Figure(marks=[scatter, line], axes=[plt.Axis(scale=x_sc), plt.Axis(scale=y_sc)])
-        fig.layout.height, fig.layout.width = '400px', '400px'
-        display(fig)
+    degree.observe(update, names='value')
 
-        @widgets.interact(d=(1, 10, 1))
-        def update(d=2):
-            data = X.reshape(-1, 1)
-            for i in range(2, d + 1):
-                data = np.hstack([data, (X**i).reshape(-1, 1)])
-            lr = LinearRegression().fit(data, y)
-            line.y = lr.predict(data)
-
-    except Exception:
-        import matplotlib.pyplot as plt
-
-        fig, ax = plt.subplots(figsize=(4, 4))
-        ax.scatter(X, y, c='blue', s=10)
-        (line,) = ax.plot(X, y, 'r-')
-
-        def update(d=2):
-            data = X.reshape(-1, 1)
-            for i in range(2, d + 1):
-                data = np.hstack([data, (X**i).reshape(-1, 1)])
-            lr = LinearRegression().fit(data, y)
-            line.set_ydata(lr.predict(data))
-            fig.canvas.draw_idle()
-
-        sliders = widgets.interactive(update, d=(1, 10, 1))
-        display(widgets.VBox([sliders, fig.canvas]))
+    display(fig, degree)
