@@ -1,6 +1,6 @@
 from sklearn import datasets
 import pandas as pd
-import ipyvolume as ipv
+# import ipyvolume as ipv
 import numpy as np
 import ipywidgets as widgets
 import bqplot as bq
