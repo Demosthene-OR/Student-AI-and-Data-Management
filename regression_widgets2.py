@@ -10,6 +10,7 @@ import time
 from sklearn import datasets
 from sklearn.linear_model import LinearRegression
 import markdown
+from ipywidgets import FloatSlider, HBox, VBox, Label, HTMLMath
 
 # Détection Colab
 def in_colab():
@@ -90,19 +91,27 @@ def regression_widget():
 
                             # Widgets
 
-    beta_hat = widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.0, description = markdown.markdown(r"$\beta_1$"))
-    bias_hat = widgets.FloatSlider(min=-4, max=4, step=0.1, value=0, description = markdown.markdown(r"$\beta_0$"))
-    true_bias = widgets.FloatSlider(min=-4, max=4, step=0.5, value=1.5, description = markdown.markdown(r"$\alpha_0$"))
-    true_coef = widgets.FloatSlider(min=-4, max=4, step=0.5, value=0.5, description = markdown.markdown(r"$\alpha_1$"))
-    true_variance = widgets.FloatSlider(min=0, max=1.5, step=0.1, value=1.0, description = markdown.markdown(r"$\sigma$"))
+    beta_hat = FloatSlider(min=-4, max=4, step=0.1, value=1.0, description="β1")
+    bias_hat = FloatSlider(min=-4, max=4, step=0.1, value=0, description="β0")
+    true_bias = FloatSlider(min=-4, max=4, step=0.5, value=1.5, description="α0")
+    true_coef = FloatSlider(min=-4, max=4, step=0.5, value=0.5, description="α1")
+    true_variance = FloatSlider(min=0, max=1.5, step=0.1, value=1.0, description="σ")
 
-                      # Fonction qui va interagir avec les widgets
+    # Styles uniformes
+    for slider in [beta_hat, bias_hat, true_bias, true_coef, true_variance]:
+        slider.style = {'description_width': '30px'}
+        slider.layout.width = '80%'
 
-    beta_hat.style = {'description_width': '20px', 'width' : '80%'}
-    bias_hat.style = {'description_width': '20px', 'width' : '80%'}
-    true_coef.style = {'description_width': '20px'}
-    true_bias.style = {'description_width': '20px'}
-    true_variance.style = {'description_width': '20px'}
+    # Exemple d’affichage avec rendu LaTeX pour les labels
+    labels = VBox([
+        HTMLMath(value=r"$\beta_1$"), beta_hat,
+        HTMLMath(value=r"$\beta_0$"), bias_hat,
+        HTMLMath(value=r"$\alpha_0$"), true_bias,
+        HTMLMath(value=r"$\alpha_1$"), true_coef,
+        HTMLMath(value=r"$\sigma$"), true_variance
+    ])
+
+    display(labels)
 
 
     def linreg1_update_regression(args):
