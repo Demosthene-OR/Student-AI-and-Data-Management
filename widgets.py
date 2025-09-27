@@ -1,114 +1,108 @@
 import numpy as np
+import pandas as pd
+from sklearn import datasets
 import ipywidgets as widgets
-from IPython.display import display
-import plotly.graph_objs as go
-from sklearn.linear_model import LinearRegression
+from IPython.display import display, HTML
 
-# =========================
-# Linear Regression Widget
-# =========================
-def regression_widget():
-    np.random.seed(0)
-    X = np.linspace(-4, 4, 50)
-    y = 0.5*X + 1.5 + np.random.normal(0,1,50)
-
-    scatter = go.Scatter(x=X, y=y, mode='markers', marker=dict(color='blue'))
-    line = go.Scatter(x=X, y=0.5*X + 1.5, mode='lines', line=dict(color='red'))
-
-    fig = go.FigureWidget(data=[scatter, line])
-    fig.update_layout(width=400, height=400, title="Linear Regression")
-
-    beta_slider = widgets.FloatSlider(min=-2, max=2, step=0.1, value=0.5, description="β1")
-    bias_slider = widgets.FloatSlider(min=-3, max=3, step=0.1, value=1.5, description="β0")
-
-    def update_plot(beta, bias):
-        with fig.batch_update():
-            fig.data[1].y = beta*X + bias
-
-    widgets.interact(update_plot, beta=beta_slider, bias=bias_slider)
-    display(widgets.VBox([beta_slider, bias_slider, fig]))
-
-# =========================
-# Interactive MSE Widget
-# =========================
-def interactive_MSE():
-    np.random.seed(0)
-    X = np.linspace(-4, 4, 20)
-    y = 1.5*X + np.random.normal(0, 1.2, 20)
-
-    scatter = go.Scatter(x=X, y=y, mode='markers', marker=dict(color='blue'))
-    line = go.Scatter(x=X, y=1.5*X, mode='lines', line=dict(color='red'))
-
-    fig = go.FigureWidget(data=[scatter, line])
-    fig.update_layout(width=400, height=400, title="Interactive MSE")
-
-    beta_slider = widgets.FloatSlider(min=-2, max=2, step=0.1, value=1.5, description="β1")
-    mse_label = widgets.HTML(value=f"<b>MSE: {np.mean((y - 1.5*X)**2):.2f}</b>")
-
-    def update(beta):
-        with fig.batch_update():
-            y_pred = beta*X
-            fig.data[1].y = y_pred
-            mse = np.mean((y - y_pred)**2)
-            mse_label.value = f"<b>MSE: {mse:.2f}</b>"
-
-    beta_slider.observe(lambda change: update(change['new']), names='value')
-    display(widgets.VBox([fig, mse_label, beta_slider]))
-
-# =========================
-# Polynomial Regression Widget
-# =========================
-def polynomial_regression():
-    np.random.seed(0)
-    n_samples = 50
-    X = np.linspace(0, 10, n_samples)
-    y = -0.1*X**2 + 1*X + 1.5 + np.random.normal(0,1,n_samples)
-
-    scatter = go.Scatter(x=X, y=y, mode='markers', marker=dict(color='blue'))
-    line = go.Scatter(x=X, y=-0.1*X**2 + 1*X + 1.5, mode='lines', line=dict(color='red'))
-
-    fig = go.FigureWidget(data=[scatter, line])
-    fig.update_layout(width=400, height=400, title="Polynomial Regression")
-
-    beta0 = widgets.FloatSlider(-4, 4, 0.1, 1.5, description="β0")
-    beta1 = widgets.FloatSlider(-2, 2, 0.1, 1.0, description="β1")
-    beta2 = widgets.FloatSlider(-2, 2, 0.1, -0.1, description="β2")
-
-    def update(beta0_val, beta1_val, beta2_val):
-        with fig.batch_update():
-            line.y = beta0_val + beta1_val*X + beta2_val*X**2
-
-    widgets.interact(update, beta0=beta0, beta1=beta1, beta2=beta2)
-    display(widgets.VBox([beta0, beta1, beta2, fig]))
-
-# =========================
-# Polynomial Regression with Degree Slider
-# =========================
-def polynomial_regression2():
-    np.random.seed(0)
-    n_samples = 30
-    X = np.linspace(0, 10, n_samples)
-    y = -0.1*X**2 + 1*X + 1.5 + np.random.normal(0, 1, n_samples)
-
-    scatter = go.Scatter(x=X, y=y, mode='markers', marker=dict(color='blue'))
-    line = go.Scatter(x=X, y=np.zeros_like(X), mode='lines', line=dict(color='red'))
-
-    fig = go.FigureWidget(data=[scatter, line])
-    fig.update_layout(width=500, height=400, title="Polynomial Regression Degree d")
-
-    degree_slider = widgets.IntSlider(min=1, max=10, value=2, description="Degree d")
-
-    def update_poly(d):
-        data = X.reshape(-1,1)
-        for i in range(2, d+1):
-            data = np.hstack([data, X.reshape(-1,1)**i])
-        lr = LinearRegression()
-        lr.fit(data, y)
-        y_pred = lr.predict(data)
-        with fig.batch_update():
-            fig.data[1].y = y_pred
-
-    degree_slider.observe(lambda change: update_poly(change['new']), names='value')
-    display(widgets.VBox([degree_slider, fig]))
+# Détection Colab
+def in_colab():
+    try:
+        import google.colab
+        return True
+    except ImportError:
+        return False
 
 
+def linear_classification():
+    # === Jeu de données ===
+    iris_X = datasets.load_iris()['data']
+    iris_y = datasets.load_iris()['target']
+    iris_y[iris_y == 2] = 1
+
+    colors = ['#FF8000' if y == 0 else '#33FFFF' for y in iris_y]
+
+    scaled = iris_X[:, :2] - np.array([np.mean(iris_X[:, 0]), np.mean(iris_X[:, 1])])
+    scaled = scaled / np.array([np.std(iris_X[:, 0]), np.std(iris_X[:, 1])])
+
+    # === Vérification environnement ===
+    if in_colab():
+        try:
+            from google.colab import output
+            output.enable_custom_widget_manager()
+        except Exception:
+            display(HTML("<b style='color:red'>⚠️ Attention :</b> "
+                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
+                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
+
+    try:
+        import bqplot.pyplot as plt
+
+        # ==== Version BQPlot (Jupyter) ====
+        sep2_x_sc = plt.LinearScale(min=-3, max=3)
+        sep2_y_sc = plt.LinearScale(min=-3, max=3)
+
+        sep2_ax_x = plt.Axis(scale=sep2_x_sc, label='Toxic Substance Concentration')
+        sep2_ax_y = plt.Axis(scale=sep2_y_sc, orientation='vertical', label='Mineral Salt Content')
+
+        sep2_bar = plt.Scatter(x=scaled[:, 0],
+                               y=scaled[:, 1]-1,
+                               colors=colors,
+                               default_size=10,
+                               scales={'x': sep2_x_sc, 'y': sep2_y_sc})
+
+        w1, w2 = 1.0, 1.0
+        w = np.array([w1, w2])
+
+        sep2_vector_line = plt.Lines(x=[0, w1],
+                                     y=[0, w2],
+                                     colors=['red'],
+                                     scales={'x': sep2_x_sc, 'y': sep2_y_sc})
+
+        sep2_vector_plane = plt.Lines(x=[-30*w2/np.linalg.norm(w), 30*w2/np.linalg.norm(w)],
+                                      y=[30*w1/np.linalg.norm(w), -30*w1/np.linalg.norm(w)],
+                                      colors=['red'],
+                                      scales={'x': sep2_x_sc, 'y': sep2_y_sc})
+
+        fig = plt.Figure(marks=[sep2_bar, sep2_vector_line, sep2_vector_plane],
+                         axes=[sep2_ax_x, sep2_ax_y])
+        fig.layout.height = '400px'
+        fig.layout.width = '400px'
+
+        display(fig)
+
+        @widgets.interact(
+            w1=widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.0),
+            w2=widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.0)
+        )
+        def update(w1, w2):
+            w = np.array([w1, w2])
+            sep2_vector_line.x = [0, w1]
+            sep2_vector_line.y = [0, w2]
+            sep2_vector_plane.x = [-30*w2/np.linalg.norm(w), 30*w2/np.linalg.norm(w)]
+            sep2_vector_plane.y = [30*w1/np.linalg.norm(w), -30*w1/np.linalg.norm(w)]
+
+    except Exception:
+        # ==== Version Matplotlib (Colab fallback) ====
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots(figsize=(4, 4))
+        ax.scatter(scaled[:, 0], scaled[:, 1]-1, c=colors, s=10)
+        line, = ax.plot([0, 1], [0, 1], 'r-')
+
+        def update(w1=1.0, w2=1.0):
+            w = np.array([w1, w2])
+            line.set_xdata([0, w1])
+            line.set_ydata([0, w2])
+            fig.canvas.draw_idle()
+
+        out = widgets.interactive_output(update, {
+            'w1': widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.0, description="w1"),
+            'w2': widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.0, description="w2"),
+        })
+
+        sliders = widgets.VBox([
+            widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.0, description="w1"),
+            widgets.FloatSlider(min=-4, max=4, step=0.1, value=1.0, description="w2")
+        ])
+
+        display(widgets.HBox([sliders, out]))
