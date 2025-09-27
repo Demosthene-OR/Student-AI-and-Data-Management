@@ -22,6 +22,17 @@ def regression_widget():
     X = np.linspace(-4, 4, n_samples)
     y = alpha * X + bias + np.random.normal(0, 1, n_samples)
 
+    # === Vérification environnement ===
+    if in_colab():
+        try:
+            from google.colab import output
+            output.enable_custom_widget_manager()
+        except Exception:
+            display(HTML("<b style='color:red'>⚠️ Attention :</b> "
+                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
+                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
+
+
     try:
         import bqplot.pyplot as plt
 
@@ -65,6 +76,16 @@ def interactive_MSE():
     X = np.linspace(-4, 4, 20)
     y = 0.7 * X + np.random.normal(0, 1.2, len(X))
 
+    # === Vérification environnement ===
+    if in_colab():
+        try:
+            from google.colab import output
+            output.enable_custom_widget_manager()
+        except Exception:
+            display(HTML("<b style='color:red'>⚠️ Attention :</b> "
+                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
+                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
+
     try:
         import bqplot.pyplot as plt
 
@@ -102,6 +123,16 @@ def polynomial_regression():
     X = np.linspace(0, 10, n_samples)
     y = -0.1 * X**2 + 1 * X + 1.5 + np.random.normal(0, 1, n_samples)
 
+    # === Vérification environnement ===
+    if in_colab():
+        try:
+            from google.colab import output
+            output.enable_custom_widget_manager()
+        except Exception:
+            display(HTML("<b style='color:red'>⚠️ Attention :</b> "
+                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
+                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
+
     try:
         import bqplot.pyplot as plt
 
@@ -138,6 +169,16 @@ def polynomial_regression2():
     n_samples = 30
     X = np.linspace(0, 10, n_samples)
     y = -0.1 * X**2 + 1 * X + 1.5 + np.random.normal(0, 1, n_samples)
+
+    # === Vérification environnement ===
+    if in_colab():
+        try:
+            from google.colab import output
+            output.enable_custom_widget_manager()
+        except Exception:
+            display(HTML("<b style='color:red'>⚠️ Attention :</b> "
+                         "Les widgets interactifs peuvent ne pas fonctionner dans Colab. "
+                         "Essaie plutôt dans Jupyter Notebook/Lab pour une meilleure expérience."))
 
     try:
         import bqplot.pyplot as plt
