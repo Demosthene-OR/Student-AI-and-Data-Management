@@ -1995,7 +1995,7 @@ def show_operation_conv():
 
 import ipywidgets as widgets
 
-def show_conv(img_path='taj_mahal.jpg'):
+def show_conv(img_path='./data/taj_mahal.jpg'):
     # Interactive Convolution
 	if(True):
 		# Image
