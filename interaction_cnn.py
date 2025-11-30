@@ -1985,10 +1985,14 @@ def show_operation_conv():
 		if(True):
 			conv_anim(0)
 
-			conv_buttons = widgets.HBox([conv_prev_button, conv_next_button])
-			display(conv_fig, conv_buttons)
+			# conv_buttons = widgets.HBox([conv_prev_button, conv_next_button])
+			# display(conv_fig, conv_buttons)
 
-			
+			ui = widgets.VBox([
+    				conv_fig,          # figure bqplot
+    				conv_prev_button, conv_next_button   # HBox de boutons ipywidgets
+				])
+			display(ui)
 			
 			
 			
