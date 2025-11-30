@@ -9,6 +9,7 @@ from PIL import Image
 from scipy import ndimage
 import matplotlib as mpl
 from matplotlib import image as im_matplotlib
+import requests
 from io import BytesIO
 from IPython.display import Markdown
 
