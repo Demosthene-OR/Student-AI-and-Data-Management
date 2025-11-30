@@ -1985,27 +1985,27 @@ def show_operation_conv():
 		if(True):
 			conv_anim(0)
 
-			# conv_buttons = widgets.HBox([conv_prev_button, conv_next_button])
-			# display(conv_fig, conv_buttons)
+			conv_buttons = widgets.HBox([conv_prev_button, conv_next_button])
+			display(conv_fig, conv_buttons)
 
-			ui = widgets.VBox([
-    				conv_fig,          # figure bqplot
-    				conv_prev_button, conv_next_button   # HBox de boutons ipywidgets
-				])
-			display(ui)
 			
 			
 			
+	
 
 import ipywidgets as widgets
 
-def show_conv(img_path='./data/taj_mahal.jpg'):
+def show_conv(img_path='https://raw.githubusercontent.com/Demosthene-OR/Student-AI-and-Data-Management/main/data/taj_mahal.jpg'):
+
+    # Télécharger l'image
+	response = requests.get(img_path)
+	response.raise_for_status()  # Vérifie les erreurs HTTP
     # Interactive Convolution
 	if(True):
 		# Image
 
 		# taj_mahal = cv2.imread(img_path, 0)
-		taj_mahal = np.array(Image.open(img_path).convert('L'))
+		taj_mahal = np.array(Image.open(BytesIO(response.content)).convert('L'))
 
 		# Fonctions
 		if(True):
